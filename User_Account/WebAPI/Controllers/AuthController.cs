@@ -1,4 +1,5 @@
-﻿using Application.Features.Auth.Commands.RequestModels;
+﻿using Application.DTOs;
+using Application.Features.Auth.Commands.RequestModels;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -16,9 +17,10 @@ public class AuthController : BaseController
     
     [HttpPost]
     [AllowAnonymous]
-    public async Task<IActionResult> Login(LoginCommand loginCommand)
+    [ProducesResponseType(typeof(LoginDto), 200)]
+    public async Task<IActionResult> Login(LoginCommand loginCommand, CancellationToken cancellationToken)
     {
-        var result = await _sender.Send(loginCommand);
+        var result = await _sender.Send(loginCommand, cancellationToken);
         return Ok(result);
     }
 }
