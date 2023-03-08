@@ -6,6 +6,7 @@ using Domain;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Application.Features.Auth.Commands.Handlers;
 
@@ -15,14 +16,16 @@ public class LoginHandler : IRequestHandler<LoginCommand, LoginDto>
     private readonly UserManager<AppUser> _userManager;
     private readonly IJwtGenerator _jwtGenerator;
     private readonly IMapper _mapper;
+    private readonly ILogger<LoginHandler> _logger;
 
     public LoginHandler(SignInManager<AppUser> signInManager, UserManager<AppUser> userManager,
-        IJwtGenerator jwtGenerator, IMapper mapper)
+        IJwtGenerator jwtGenerator, IMapper mapper, ILogger<LoginHandler> logger)
     {
         _signInManager = signInManager;
         _userManager = userManager;
         _jwtGenerator = jwtGenerator;
         _mapper = mapper;
+        _logger = logger;
     }
     
     public async Task<LoginDto> Handle(LoginCommand request, CancellationToken cancellationToken)
@@ -33,6 +36,7 @@ public class LoginHandler : IRequestHandler<LoginCommand, LoginDto>
 
         if (user == null)
         {
+            _logger.LogError("Login Failed");
             throw new Exception("Login Failed");
         }
 
