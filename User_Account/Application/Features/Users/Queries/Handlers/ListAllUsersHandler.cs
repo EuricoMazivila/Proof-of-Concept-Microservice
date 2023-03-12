@@ -2,13 +2,14 @@
 using Application.Features.Users.Queries.RequestModels;
 using AutoMapper;
 using Domain;
+using FluentResults;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace Application.Features.Users.Queries.Handlers;
 
-public class ListAllUsersHandler : IRequestHandler<ListAllUsersQuery, IReadOnlyList<UserDto>>
+public class ListAllUsersHandler : IRequestHandler<ListAllUsersQuery, Result<IReadOnlyList<UserDto>>>
 {
     private readonly UserManager<AppUser> _userManager;
     private readonly IMapper _mapper;
@@ -19,10 +20,10 @@ public class ListAllUsersHandler : IRequestHandler<ListAllUsersQuery, IReadOnlyL
         _mapper = mapper;
     }
     
-    public async Task<IReadOnlyList<UserDto>> Handle(ListAllUsersQuery request, CancellationToken cancellationToken)
+    public async Task<Result<IReadOnlyList<UserDto>>> Handle(ListAllUsersQuery request, CancellationToken cancellationToken)
     {
         var users = await _userManager.Users
             .ToListAsync(cancellationToken);
-        return _mapper.Map<IReadOnlyList<AppUser>, IReadOnlyList<UserDto>>(users);
+        return Result.Ok(_mapper.Map<IReadOnlyList<AppUser>, IReadOnlyList<UserDto>>(users));
     }
 }

@@ -1,4 +1,6 @@
 ﻿using Microsoft.OpenApi.Models;
+using WebAPI.Serialization;
+using WebAPI.Serialization.Results;
 
 namespace WebAPI;
 
@@ -7,6 +9,7 @@ public static class DependencyInjection
     public static IServiceCollection AddWebAPI(this IServiceCollection services)
     {
         SwaggerConfiguration(services);
+        services.AddSerializationResult();
         return services;
     }
 
@@ -48,5 +51,19 @@ public static class DependencyInjection
                 }
             });
         });
+    }
+    
+    private static IServiceCollection AddSerializationResult(this IServiceCollection services)
+    {
+        services
+            .AddTransient<IResultSerializationStrategy, SerializationResultSuccess>()
+            .AddTransient<IResultSerializationStrategy, SerializationResultInternalError>()
+            .AddTransient<IResultSerializationStrategy, SerializationResultValidationError>()
+            .AddTransient<IResultSerializationStrategy, SerializationResultApplicationError>()
+            .AddTransient<IResultSerializationStrategy, SerializationResultNotFoundError>()
+            .AddTransient<IResultSerializationStrategy, SerializationResultUnauthorizedError>()
+            .AddTransient<IResultSerializationStrategy, SerializationResultConflictError>();
+
+        return services;
     }
 }

@@ -3,6 +3,7 @@ using Application.Features.Auth.Commands.RequestModels;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using WebAPI.Serialization;
 
 namespace WebAPI.Controllers;
 
@@ -21,6 +22,7 @@ public class AuthController : BaseController
     public async Task<IActionResult> Login(LoginCommand loginCommand, CancellationToken cancellationToken)
     {
         var result = await _sender.Send(loginCommand, cancellationToken);
-        return Ok(result);
+        
+        return this.SerializeResult(result);
     }
 }

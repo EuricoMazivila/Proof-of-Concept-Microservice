@@ -2,6 +2,7 @@
 using Application.Features.Users.Queries.RequestModels;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using WebAPI.Serialization;
 
 namespace WebAPI.Controllers;
 
@@ -19,6 +20,6 @@ public class UsersController : BaseController
     public async Task<IActionResult> ListAllUsers()
     {
         var result = await _sender.Send(new ListAllUsersQuery());
-        return Ok(result);
+        return this.SerializeResult(result);
     }
 }
