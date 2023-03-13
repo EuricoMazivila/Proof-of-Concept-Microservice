@@ -19,10 +19,12 @@ public class SerializationResultInternalError : IResultSerializationStrategy
 
     public IActionResult Execute(Result result)
     {
+        var error = (InternalError)result.Errors.First(e => e is InternalError);
         var problemDetails = new ProblemDetails
         {
             Type = "https://tools.ietf.org/html/rfc7231#section-6.6.1",
-            Title = "An unknown internal error occurred."
+            Title = "An unknown internal error occurred.",
+            Detail = error.Message
         };
 
         return new ObjectResult(problemDetails)

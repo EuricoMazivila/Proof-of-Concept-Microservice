@@ -11,7 +11,7 @@ public static class SerializationResult
     {
         var strategy = strategies.FirstOrDefault(e => e.MustExecute(result));
         
-        return strategy.Execute(result) ?? new ObjectResult(new ProblemDetails
+        return strategy?.Execute(result) ?? new ObjectResult(new ProblemDetails
         {
             Type = "https://tools.ietf.org/html/rfc7231#section-6.6.1",
             Title = "An unknown internal error occurred."
@@ -26,7 +26,7 @@ public static class SerializationResult
     {
         var strategy = strategies.FirstOrDefault(e => e.MustExecute(result));
         
-        return strategy.Execute(result) ?? new ObjectResult(new ProblemDetails
+        return strategy?.Execute(result) ?? new ObjectResult(new ProblemDetails
         {
             Type = "https://tools.ietf.org/html/rfc7231#section-6.6.1",
             Title = "An unknown internal error occurred."
@@ -39,12 +39,12 @@ public static class SerializationResult
     public static IActionResult SerializeResult(this ControllerBase controller, Result result)
     {
         var strategies = controller.HttpContext.RequestServices.GetService<IEnumerable<IResultSerializationStrategy>>();
-        return SerializeResult(strategies, result);
+        return SerializeResult(strategies!, result);
     }
     
     public static IActionResult SerializeResult<TContent>(this ControllerBase controller, Result<TContent> result)
     {
         var strategies = controller.HttpContext.RequestServices.GetService<IEnumerable<IResultSerializationStrategy>>();
-        return SerializeResult(strategies, result);
+        return SerializeResult(strategies!, result);
     }
 }
