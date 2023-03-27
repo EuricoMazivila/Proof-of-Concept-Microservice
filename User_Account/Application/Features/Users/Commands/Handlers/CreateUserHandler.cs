@@ -1,20 +1,24 @@
 ﻿using Application.DTOs;
 using Application.Errors;
 using Application.Features.Users.Commands.RequestModels;
+using Application.Interfaces;
 using Domain;
 using FluentResults;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
+using Models;
 
 namespace Application.Features.Users.Commands.Handlers;
 
 public class CreateUserHandler : IRequestHandler<CreateUserCommand, Result<UserDto>>
 {
     private readonly UserManager<AppUser> _userManager;
+    private readonly IEventBus _eventBus;
 
-    public CreateUserHandler(UserManager<AppUser> userManager)
+    public CreateUserHandler(UserManager<AppUser> userManager, IEventBus eventBus)
     {
         _userManager = userManager;
+        _eventBus = eventBus;
     }
     
     public async Task<Result<UserDto>> Handle(CreateUserCommand request, CancellationToken cancellationToken)
@@ -33,11 +37,23 @@ public class CreateUserHandler : IRequestHandler<CreateUserCommand, Result<UserD
         if (!result.Succeeded)
             return Results.InternalError("Fail to create account");
 
-        return Result.Ok(new UserDto
+        var userResult = new UserDto
         {
             FullName = user.FullName,
             Email = user.Email,
             PhoneNumber = user.PhoneNumber
-        });
+        };
+        
+        var userCreated = new UserCreatedEvent
+        {
+            UserName = user.UserName,
+            FullName = user.FullName,
+            Email = user.Email,
+            PhoneNumber = user.PhoneNumber
+        };
+        
+        await _eventBus.SendAsync(userCreated, "userCreatedQueue",cancellationToken);
+        
+        return Result.Ok(userResult);
     }
 }

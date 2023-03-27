@@ -1,6 +1,4 @@
-﻿using Application.Interfaces;
-using Infrastructure.MessageBroker;
-using Infrastructure.Security;
+﻿using Infrastructure.MessageBroker;
 using MassTransit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,12 +8,10 @@ namespace Infrastructure;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddInfrastructure(this IServiceCollection services, 
+        IConfiguration configuration)
     {
-        services.AddScoped<IJwtGenerator, JwtGenerator>();
-
         ConfigureMessageBroker(services, configuration);
-        
         return services;
     }
 
@@ -23,26 +19,31 @@ public static class DependencyInjection
     {
         services.Configure<MessageBrokerSettings>(
             configuration.GetSection("MessageBroker"));
-
+        
         services.AddSingleton(sp =>
             sp.GetRequiredService<IOptions<MessageBrokerSettings>>().Value);
         
         services.AddMassTransit(busConfigurator =>
         {
             busConfigurator.SetKebabCaseEndpointNameFormatter();
+            busConfigurator.AddConsumer<UserCreatedEventConsumer>();
             
-            busConfigurator.AddBus(provider => Bus.Factory.CreateUsingRabbitMq(configurator =>
+            busConfigurator.AddBus(provider => Bus.Factory.CreateUsingRabbitMq(cfg =>
             {
                 var settings = provider.GetRequiredService<MessageBrokerSettings>();
-                configurator.Host(new Uri(settings.Host), h =>
+                
+                cfg.Host(new Uri(settings.Host), h =>
                 {
                     h.Username(settings.Username);
                     h.Password(settings.Password);
                 });
+                cfg.ReceiveEndpoint("userCreatedQueue", ep =>
+                {
+                    ep.PrefetchCount = 10;
+                    ep.UseMessageRetry(r => r.Interval(2,100));
+                    ep.ConfigureConsumer<UserCreatedEventConsumer>(provider);
+                });
             }));
         });
-
-        services.AddTransient<IEventBus, EventBus>();
-
     }
 }
