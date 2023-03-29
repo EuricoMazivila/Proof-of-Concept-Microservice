@@ -1,10 +1,12 @@
 using Application;
 using Infrastructure;
+using WebAPI.Checks;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services
+    .AddHealthCheckService()
     .AddApplication()
     .AddInfrastructure(builder.Configuration);
 builder.Services.AddControllers();
@@ -25,6 +27,7 @@ app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
+app.AddHealthCheckApp();
 app.MapControllers();
 
 app.Run();
