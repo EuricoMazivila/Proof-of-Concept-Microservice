@@ -3,11 +3,13 @@ using Infrastructure;
 using Persistence;
 using Serilog;
 using WebAPI;
+using WebAPI.Checks;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services
+    .AddHealthCheckService(builder.Configuration)
     .AddPersistence(builder.Configuration)
     .AddInfrastructure(builder.Configuration)
     .AddApplication()
@@ -34,6 +36,8 @@ app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.AddHealthCheckApp();
 
 app.MapControllers();
 
